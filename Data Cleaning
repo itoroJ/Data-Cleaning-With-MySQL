@@ -1,1 +1,101 @@
+SELECT *
+FROM vehicles;
 
+-- Create Duplicate table for safety
+
+CREATE TABLE vehicles_staging
+	LIKE vehicles;
+    
+INSERT INTO vehicles_staging
+SELECT *
+FROM vehicles;   
+
+-- Checking for Duplicate Data
+
+WITH duplicate_cte AS
+(
+SELECT *,
+ROW_NUMBER() OVER(
+PARTITION BY id, url, region, region_url, price, `year`, manufacturer, model, `condition`, cylinders, fuel, 
+odometer, title_status, transmission, VIN, drive, `type`, size, paint_color, image_url, `description`, county, 
+state, lat, `long`) AS row_num
+	FROM vehicles_staging
+)
+    SELECT * 
+    FROM duplicate_cte
+    WHERE row_num > 1;
+-- There are no duplicates 
+
+
+
+-- Checking for Distinct Data
+ 
+SELECT DISTINCT manufacturer 
+	FROM vehicles_staging
+    ORDER BY 1;
+    
+SELECT DISTINCT region 
+	FROM vehicles_staging
+    ORDER BY 1;
+    
+SELECT DISTINCT model 
+	FROM vehicles_staging
+    ORDER BY 1;    
+    
+SELECT DISTINCT `condition` 
+	FROM vehicles_staging
+    ORDER BY 1;      
+    
+SELECT DISTINCT fuel
+	FROM vehicles_staging
+    ORDER BY 1;   
+
+SELECT DISTINCT title_status 
+	FROM vehicles_staging
+    ORDER BY 1;    
+    
+SELECT DISTINCT drive 
+	FROM vehicles_staging
+    ORDER BY 1; 
+    
+SELECT DISTINCT `type` 
+	FROM vehicles_staging
+    ORDER BY 1;  
+    
+SELECT DISTINCT paint_color 
+	FROM vehicles_staging
+    ORDER BY 1;    
+-- Data looks unique
+
+-- Will try to fill in blank fields
+
+SELECT *
+FROM vehicles_staging
+WHERE state = 'az';
+
+SELECT *
+FROM vehicles_staging
+WHERE price = 0;
+-- Can't work with these, so i'll delete them
+
+DELETE
+FROM vehicles_staging
+WHERE price = 0;
+
+SELECT *
+FROM vehicles_staging 
+WHERE (region LIKE '%%') AND model = '' OR manufacturer =''
+ORDER BY region; 
+
+SELECT *
+FROM vehicles_staging
+WHERE `year` = '' AND fuel = '' AND manufacturer = '';
+
+-- I couldnt find any way to fill the blanks, so i'll delete useless rows
+
+DELETE
+FROM vehicles_staging
+WHERE `year` = '' AND fuel = '' AND manufacturer = '';
+
+SELECT *
+FROM vehicles_staging;
