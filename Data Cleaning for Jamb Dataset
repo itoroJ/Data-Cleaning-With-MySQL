@@ -1,0 +1,57 @@
+SELECT *
+FROM jamb_exam_results;
+
+-- Create Staging table
+
+CREATE TABLE jamb_exam_results_staging
+LIKE jamb_exam_results;
+
+INSERT INTO jamb_exam_results_staging
+SELECT *
+FROM jamb_exam_results;
+
+SELECT *
+FROM jamb_exam_results_staging;
+
+-- Checking for duplicate data
+
+SELECT DISTINCT school_type
+FROM jamb_exam_results_staging
+ORDER BY 1;
+
+SELECT DISTINCT school_location
+FROM jamb_exam_results_staging
+ORDER BY 1;
+
+SELECT DISTINCT Parent_Education_Level
+FROM jamb_exam_results_staging
+ORDER BY 1;
+-- No errors or duplicates
+
+
+
+-- Check if multiple records were imputed
+
+WITH duplicate_cte AS
+(
+	SELECT*,
+    ROW_NUMBER() OVER( 
+    PARTITION BY JAMB_Score, Study_Hours_Per_Week,	Attendance_Rate, Teacher_Quality, Distance_To_School,	
+    School_Type, School_Location, Extra_Tutorials, Access_To_Learning_Materials, Parent_Involvement, IT_Knowledge,	
+    Student_ID, Age, Gender, Socioeconomic_Status, Parent_Education_Level, Assignments_Completed) AS row_num
+		FROM jamb_exam_results_staging 
+    )
+		SELECT *
+        FROM duplicate_cte
+        WHERE row_num > 1;
+-- No duplicate records
+
+
+-- SOME QUERIES 
+
+SELECT *
+FROM jamb_exam_results_staging;
+
+SELECT *
+	FROM jamb_exam_results_staging
+	WHERE JAMB_Score > 300;
